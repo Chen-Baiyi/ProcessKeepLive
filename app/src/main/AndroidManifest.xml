@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.cby.processkeeplive">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".four.KeepLiveActivity"
+            android:theme="@style/ScreenTheme" />
+        <!--######################## 账号同步 #####################-->
+        <!--配置账户服务的 service-->
+        <service
+            android:name=".one.AuthenticationService"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/accountauthenticator" />
+        </service>
+        <service
+            android:name=".one.SyncService"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_adapter" />
+        </service>
+
+        <provider
+            android:name=".one.SyncContentProvider"
+            android:authorities="com.cby.guardback.provider"
+            tools:ignore="ExportedContentProvider" />
+        <!--#########################################################-->
+
+        <!--######################### JobService ########################-->
+        <service
+            android:name=".two.GuardJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!--#############################################################-->
+        <!--######################### 前台服务 ##########################-->
+        <service android:name=".three.ForegroundService" />
+        <service android:name=".three.ForegroundService$InnerService" />
+        <service android:name=".three.LocalService" />
+        <service
+            android:name=".three.RemoteService"
+            android:process=":remote" />
+
+        <!--#############################################################-->
+
+    </application>
+
+</manifest>
