@@ -1,37 +1,62 @@
-# ProcessKeepLive
+# 守护进程
 
-#### 介绍
-守护进程
-
-#### 软件架构
-软件架构说明
+###  进程划分
 
 
-#### 安装教程
+ **前台进程（Foreground process）** 
 
-1. xxxx
-2. xxxx
-3. xxxx
+场景： 
+- 某个进程持有一个正在与用户交互的Activity并且该Activity正处于resume的状态。 
+- 某个进程持有一个Service，并且该Service与用户正在交互的Activity绑定。 
+- 某个进程持有一个Service，并且该Service调用startForeground()方法使之位于前台运行。 
+- 某个进程持有一个Service，并且该Service正在执行它的某个生命周期回调方法，比如onCreate()、 onStart()或onDestroy()。 
+- 某个进程持有一个BroadcastReceiver，并且该BroadcastReceiver正在执行其onReceive()方法。
 
-#### 使用说明
+用户正在使用的程序，一般系统是不会杀死前台进程的，除非用户强制停止应用或者系统内存不足等极端情况会杀死。
 
-1. xxxx
-2. xxxx
-3. xxxx
+ **可见进程（Visible process）** 
 
-#### 参与贡献
+场景： 
+- 拥有不在前台、但仍对用户可见的 Activity（已调用 onPause()）。 
+- 拥有绑定到可见（或前台）Activity 的 Service
 
-1. Fork 本仓库
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
+用户正在使用，看得到，但是摸不着，没有覆盖到整个屏幕,只有屏幕的一部分可见进程不包含任何前台组件，一般系统也是不会杀死可见进程的，除非要在资源吃紧的情况下，要保持某个或多个前台进程存活
+ 
+**服务进程（Service process）** 
+
+场景 
+- 某个进程中运行着一个Service且该Service是通过startService()启动的，与用户看见的界面没有直接关联。
+
+在内存不足以维持所有前台进程和可见进程同时运行的情况下，服务进程会被杀死
+
+ **后台进程（Background process）** 
+
+场景： 
+- 在用户按了”back”或者”home”后,程序本身看不到了,但是其实还在运行的程序，比如Activity调用了onPause方法
+
+系统可能随时终止它们，回收内存
+
+ **空进程（Empty process）** 
+
+场景： 
+- 某个进程不包含任何活跃的组件时该进程就会被置为空进程，完全没用,杀了它只有好处没坏处,第一个干它!
+
+### 进程回收机制
+
+在Android中，即使当用户退出应用程序之后，应用程序的进程也还是存在于系统中，这样是为了方便程序的再次启动，但是这样的话，随着打开的程序数量的增加，系统的内存会变得不足，就需要杀掉一部分进程以释放内存空间。至于是否需要杀死一些进程和哪些进程需要被杀死，是通过Low Memory Killer机制来进行判定的，它是基于Linux内核的 OOM Killer（Out-Of-Memory killer）机制诞生（看到这里是不是很熟悉，这个Kiiler经常出现在内存溢出，内存泄漏的处理场景中）。
+
+采取的判定标准就是该进程的oom_adj值的大小。什么是oom_adj？它是linux内核分配给每个系统进程的一个值，代表进程的优先级，进程回收机制就是根据这个优先级来决定是否进行回收。我们需要记住以下三点：
+
+a. 进程oom_adj值越大，越容易被终止；
+
+b. 普通应用程序进程的oom_adj>=0,系统应用进程的oom_adj才可能<0；
+
+c. 进程oom_adj值不是固定不变的，随着用户的操作，每个应用进程的优先级都会发生变化，进程对应的oom_adj值也会因此改变。
+
+（2）进程优先级与oom_adj对应关系
+
+“前台可见进程服务于后台空进程”，——既描述了线程的种类，也描述了线程的优先级：前台进程>可见进程>服务进程>后台进程>空进程。
+
+![输入图片说明](https://images.gitee.com/uploads/images/2019/0221/181444_20f7d6ef_1682002.png "屏幕截图.png")
 
 
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
